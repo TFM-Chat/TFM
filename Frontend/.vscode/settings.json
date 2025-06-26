@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/resourceGroups/RG_DASCD/providers/Microsoft.Web/sites/infraestructuraFE",
+    "appService.deploySubpath": "dist\\chatbot\\browser"
+}

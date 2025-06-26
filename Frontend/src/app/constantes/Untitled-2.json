@@ -1,0 +1,13 @@
+{
+  "gateways": [
+    {
+      "mode": "Collect",
+      "authentication_mode": "NONE",
+      "amount": { "currency": "USD", "value": 20 },
+      "provider": "GCL",
+      "due_date": "2030-06-01T12:00:00.000Z",
+      "merchant_id": "1234",
+      "gateway": "OSS"
+    }
+  ]
+}

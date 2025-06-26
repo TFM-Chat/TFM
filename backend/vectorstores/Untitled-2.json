@@ -1,0 +1,134 @@
+{
+    "async": true,
+    "transaction_id": "64069002701",
+    "country": "PE",
+    "channel": "android-app",
+    "local_currency": "USD",
+    "conversion_rate": 1,
+    "recovery_key": "CF-2576621-1",
+    "customer": {
+        "email": "jorgeantonioqr@gmail.com",
+        "name": "Quispe Rojas, Jorge Antonio"
+    },
+    "subscribers": [
+        {
+            "url": "http://proxy/clerk/change_flights/2576621/collection_result"
+        }
+    ],
+    "concepts": [
+        {
+            "id": "CF0",
+            "type": "REQUEST_FEE",
+            "amounts": [
+                {
+                    "currency": "USD",
+                    "value": 10,
+                    "interest": 0,
+                    "taxes": {
+                        "airport_rate": {
+                            "currency": "USD",
+                            "amount": 0,
+                            "value": 0,
+                            "base": 0
+                        },
+                        "value_added_tax": {
+                            "currency": "USD",
+                            "amount": 0,
+                            "value": 0,
+                            "base": 0
+                        },
+                        "airport_rate_over_net_fare": 0
+                    }
+                }
+            ],
+            "product": {
+                "id": "64069002701",
+                "type": "FLIGHT",
+                "international": false,
+                "due_date": "2024-05-12T07:08:45Z",
+                "corporate": "android-app",
+                "vendor_code": "NLA",
+                "pnr": "LA5441135HUCN",
+                "financial_deal": "DESPEGAR_BANK_PER_OWN_MERCHANT",
+                "collect_order_charges": {
+                    "currency": "USD",
+                    "base": 10,
+                    "fee": 0,
+                    "taxes": 0,
+                    "discount": 0,
+                    "total": 10
+                },
+                "conversion_rate": 1,
+                "sale_stage": "AFTER_SALE",
+                "payment_method_rule": {
+                    "id": "42566",
+                    "source_system": "BARTER"
+                },
+                "itinerary": {
+                    "type": "ONE_WAY",
+                    "fare_type": "NEGOTIATED",
+                    "validating_carrier_code": "LA",
+                    "validating_carrier": "LA",
+                    "routes": [
+                        {
+                            "segments": [
+                                {
+                                    "departure": {
+                                        "airport": "TRU",
+                                        "date_time": "2024-06-02T19:10:00.000-05:00",
+                                        "date": "2024-06-03T00:10:00Z"
+                                    },
+                                    "arrival": {
+                                        "airport": "LIM",
+                                        "date_time": "2024-06-02T20:20:00.000-05:00",
+                                        "date": "2024-06-03T01:20:00Z"
+                                    },
+                                    "flight_number": 2142,
+                                    "flight_class": "ECONOMY"
+                                }
+                            ]
+                        }
+                    ],
+                    "credential_key": "despegar_online"
+                },
+                "paxes": [
+                    {
+                        "name": "Jorge Antonio Quispe Rojas",
+                        "type": "ADULT",
+                        "birthdate": "19-10-1997",
+                        "identification": {
+                            "document_type": "LOCAL_DOCUMENT",
+                            "document_number": "70787409"
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "combined": false,
+    "merchant_ownership": "OWN",
+    "payment_ownership": "OWN",
+    "payment_method": {
+        "type": "CARD",
+        "payer": {
+            "collect_order_identification": {
+                "document_type": "PE_DNI",
+                "document_number": "70787409"
+            },
+            "address": {
+                "number": "447",
+                "street": "Av. Sergio Bernales",
+                "city": "Lima",
+                "zip_code": "15048"
+            },
+            "email": "jorgeantonioqr@gmail.com"
+        },
+        "mode": "Collect",
+        "promotion": {
+            "id": "BP5151"
+        },
+        "card_token": "7d1919b6-dea1-5674-3465-ref24b88268",
+        "installments": 1,
+        "card_type": "CREDIT"
+    }
+}

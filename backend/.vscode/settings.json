@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/resourceGroups/RG_DASCD/providers/Microsoft.Web/sites/infraestructuraBE",
+    "appService.deploySubpath": "deploy"
+}

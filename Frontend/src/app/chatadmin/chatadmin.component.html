@@ -1,0 +1,349 @@
+<div *ngIf="loading" class="loading-overlay">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+<!-- Mostrar mensaje de bienvenida -->
+
+<div class="container mt-5" style="max-width: 100%;" *ngIf="!loading">
+  <div *ngIf="!esAnonimo" class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Bienvenido, {{ nombreUsuario }}</h3>
+    <!-- Botón de Logout -->
+    <button class="btn btn-danger" (click)="logout()">Cerrar sesión</button>
+  </div>
+  <div class="card w-100">
+    <div class="card-header bg-primary text-white">
+      Chatbot de consultas de Infraestructura
+    </div>
+    <div class="card-body">
+
+      <div class="row">
+        <tabset>
+          <tab heading="Escribe tu pregunta" id="tab1">
+            <div class="captcha-container mb-3">
+              <ng-container *ngIf="siteKey">
+                <re-captcha 
+                  #captchaRef
+                  (resolved)="resolvedCaptcha($event)" 
+                  [siteKey]="siteKey">
+                </re-captcha>
+                <!-- Mostrar mensaje de error si el captcha no se resuelve -->
+                <div *ngIf="captchaError" class="alert alert-danger mt-2">{{ captchaError }}</div>
+              </ng-container>
+            </div>
+
+            <div class="col-lg-12 col-md-12">
+              <div class="input-group mb-3 mt-3">
+                <input type="text" class="form-control" placeholder="Escribe tu pregunta..." [(ngModel)]="question">
+                <button class="btn btn-primary" (click)="sendQuestion()" [disabled]="loadingQuestion">Consultar</button>
+              </div>
+              <div *ngIf="loadingQuestion" class="loading-overlay">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              <!-- Indicador de carga para toda la pantalla -->
+
+              <div *ngIf="response && !loadingQuestion">
+                <div class="alert alert-info" role="alert">
+                  {{ response }}
+                </div>
+                <div *ngFor="let doc of documentos" class="card mb-2">
+                  <div class="card-header">
+                    <button class="btn btn-link" (click)="doc.expanded = !doc.expanded">
+                      {{ doc.expanded ? '▼' : '►' }} Referencias en el documento
+                    </button>
+                    <span class="badge bg-secondary float-end">Score: {{ doc.score }}</span>
+                  </div>
+                  <div *ngIf="doc.expanded" class="card-body">
+                    <p><strong>row:</strong> {{ doc.row_number }}</p>
+                    <p><strong>Título:</strong> {{ doc.titulo }}</p>
+                    <p><strong>Descripción:</strong> {{ doc.desc }}</p>
+                    <p><strong>Año:</strong> {{ doc.anio }}</p>
+                    <p><strong>Tema:</strong> {{ doc.tem }}</p>
+                    <p><strong>Subtema:</strong> {{ doc.subtema }}</p>
+                    <p><strong>Url:</strong> {{ doc.PDF }}</p>
+                    <p><strong>Contenido:</strong></p>
+                    <p>{{ doc.contenido }}</p>
+                    <a [href]="doc.PDF" target="_blank" class="btn btn-primary">Ver Documento</a>
+                    <!-- Botón de Eliminar Documento -->
+                    <button *ngIf="!esAnonimo" (click)="eliminarDocumento(doc)" class="btn btn-danger ms-2"
+                      [disabled]="esAnonimo">
+                      <i class="fas fa-trash"></i> Eliminar Documento
+                    </button>
+                  </div>
+                </div>
+               
+              </div>
+    
+       
+            </div>
+
+          </tab>
+          <tab heading="Documentos eliminados">
+
+
+            <div *ngIf="!esAnonimo" class="col-lg-12 col-md-12">
+              <!-- Sección para documentos borrados (borrado = true) -->
+              <div *ngIf="documentosBorrados.length > 0" class="mt-4 mb-5">
+                <h4 class="text-danger fw-bold mb-3">Documentos eliminados</h4>
+                <input type="text" class="form-control mb-3" placeholder="Buscar en documentos borrados..."
+                  [(ngModel)]="filtroBorrados" (ngModelChange)="filtrarBorrados()" />
+
+                <table class="table table-bordered table-hover">
+                  <thead class="thead-dark">
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Título</th>
+                      <th>Tema</th>
+                      <th>Subtema</th>
+                      <th>Ver</th>
+                      <th>Restaurar</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let doc of getPaginatedBorrados()">
+                      <td>{{ doc.anio }}</td>
+                      <td>{{ doc.titulo }}</td>
+                      <td>{{ doc.tema }}</td>
+                      <td>{{ doc.subtema }}</td>
+                      <td>
+                        <button (click)="abrirModal(doc)" class="btn btn-sm btn-primary">
+                          <i class="fas fa-search"></i> Ver
+                        </button>
+                      </td>
+                      <td>
+                        <button [disabled]="esAnonimo" (click)="restaurarDocumento(doc)" class="btn btn-sm btn-success">
+                          <i class="fas fa-trash-restore"></i> Restaurar
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Paginación para documentos borrados -->
+                <nav *ngIf="totalPagesBorrados > 1" class="mt-3">
+                  <ul class="pagination">
+                    <!-- Botón para ir a la primera página -->
+                    <li class="page-item" [class.disabled]="currentPageBorrados === 1">
+                      <a class="page-link" (click)="changePageBorrados(1)">Primera</a>
+                    </li>
+
+                    <!-- Botón para ir a la página anterior en el rango de 10 páginas -->
+                    <li class="page-item" [class.disabled]="pageViewStart === 1">
+                      <a class="page-link" (click)="changePageRange(false, totalPagesBorrados)">...</a>
+                    </li>
+
+                    <!-- Páginas actuales del rango de paginación -->
+                    <li class="page-item" *ngFor="let page of getPaginatedPages(totalPagesBorrados)"
+                      [class.active]="currentPageBorrados === page">
+                      <a class="page-link" (click)="changePageBorrados(page)">{{ page }}</a>
+                    </li>
+
+                    <!-- Botón para ir al siguiente rango de páginas -->
+                    <li class="page-item" [class.disabled]="pageViewStart + pagesPerView > totalPagesBorrados">
+                      <a class="page-link" (click)="changePageRange(true, totalPagesBorrados)">...</a>
+                    </li>
+
+                    <!-- Botón para ir a la última página -->
+                    <li class="page-item" [class.disabled]="currentPageBorrados === totalPagesBorrados">
+                      <a class="page-link" (click)="changePageBorrados(totalPagesBorrados)">Última</a>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+
+          </tab>
+          <tab heading="Documentos Activos">
+            <div *ngIf="!esAnonimo" class="col-lg-12 col-md-12">
+
+              <!-- Sección para documentos no borrados (borrado = false) -->
+              <div *ngIf="documentosNoBorrados.length > 0" class="mt-4">
+                <h4>Documentos disponibles para busqueda</h4>
+                <input type="text" class="form-control mb-3" placeholder="Buscar en documentos disponibles..."
+                  [(ngModel)]="filtroNoBorrados" (ngModelChange)="filtrarNoBorrados()">
+
+                <table class="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Título</th>
+                      <th>Tema</th>
+                      <th>Subtema</th>
+                      <th>Ver</th>
+                      <th>Eliminar</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let doc of getPaginatedNoBorrados()">
+                      <td>{{ doc.anio }}</td>
+                      <td>{{ doc.titulo }}</td>
+                      <td>{{ doc.tema }}</td>
+                      <td>{{ doc.subtema }}</td>
+                      <td><button (click)="abrirModal(doc)" class="btn btn-sm btn-primary"><i class="fas fa-search"></i>
+                          Ver</button></td>
+                      <td><button [disabled]="esAnonimo" (click)="eliminarDocumento(doc)"
+                          class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Eliminar</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Paginación para documentos no borrados -->
+                <nav *ngIf="totalPagesNoBorrados > 1">
+                  <ul class="pagination">
+                    <!-- Botón para ir a la primera página -->
+                    <li class="page-item" [class.disabled]="currentPageNoBorrados === 1">
+                      <a class="page-link" (click)="changePageNoBorrados(1)">Primera</a>
+                    </li>
+
+                    <!-- Botón para ir a la página anterior en el rango de 10 páginas -->
+                    <li class="page-item" [class.disabled]="pageViewStart === 1">
+                      <a class="page-link" (click)="changePageRange(false, totalPagesNoBorrados)">...</a>
+                    </li>
+
+                    <!-- Páginas actuales del rango de paginación -->
+                    <li class="page-item" *ngFor="let page of getPaginatedPages(totalPagesNoBorrados)"
+                      [class.active]="currentPageNoBorrados === page">
+                      <a class="page-link" (click)="changePageNoBorrados(page)">{{ page }}</a>
+                    </li>
+
+                    <!-- Botón para ir al siguiente rango de páginas -->
+                    <li class="page-item" [class.disabled]="pageViewStart + pagesPerView > totalPagesNoBorrados">
+                      <a class="page-link" (click)="changePageRange(true, totalPagesNoBorrados)">...</a>
+                    </li>
+
+                    <!-- Botón para ir a la última página -->
+                    <li class="page-item" [class.disabled]="currentPageNoBorrados === totalPagesNoBorrados">
+                      <a class="page-link" (click)="changePageNoBorrados(totalPagesNoBorrados)">Última</a>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          </tab>
+
+          
+          <tab heading="Nuevo documento">
+            <div *ngIf="!esAnonimo" class="col-lg-12 col-md-12">
+              
+             <!-- Botón para abrir el modal de carga de documento -->
+              <button type="button" class="btn btn-primary" (click)="abrirModalUpload()">Cargar nuevo documento</button>
+          
+              <!-- Modal para cargar un nuevo documento -->
+              <div class="modal" tabindex="-1" [ngClass]="{'show': isUploadModalOpen}"
+                [ngStyle]="{'display': isUploadModalOpen ? 'block' : 'none'}">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Cargar Nuevo Documento</h5>
+                      <button type="button" class="btn-close" (click)="cerrarModalUpload()" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <!-- Mostrar spinner de carga -->
+                      <div *ngIf="loadingFileManagement" class="text-center">
+                        <div class="spinner-border" role="status">
+                          <span class="visually-hidden">Cargando...</span>
+                        </div>
+                      </div>
+          
+                      <!-- Formulario dentro del modal -->
+                      <form [formGroup]="uploadForm" (ngSubmit)="onSubmit()" *ngIf="!loadingFileManagement">
+                        <!-- Campos del formulario -->
+                        <div class="mb-3">
+                          <label for="titulo" class="form-label">Título del Documento</label>
+                          <input type="text" formControlName="titulo" class="form-control" placeholder="Título">
+                        </div>
+                        <div class="mb-3">
+                          <label for="descripcion" class="form-label">Descripción</label>
+                          <textarea formControlName="descripcion" class="form-control" rows="3" placeholder="Descripción"></textarea>
+                        </div>
+                        <div class="mb-3">
+                          <label for="tema" class="form-label">Tema</label>
+                          <input type="text" formControlName="tema" class="form-control" placeholder="Tema">
+                        </div>
+                        <div class="mb-3">
+                          <label for="subtema" class="form-label">Subtema</label>
+                          <input type="text" formControlName="subtema" class="form-control" placeholder="Subtema">
+                        </div>
+                        <div class="mb-3">
+                          <label for="fecha" class="form-label">Fecha de carga</label>
+                          <input type="date" formControlName="fecha" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                          <label for="pdf" class="form-label">Adjunte Documento</label>
+                          <input type="file" (change)="onFileChange($event)" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-success w-100" [disabled]="!uploadForm.valid">Subir Documento</button>
+                      </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" (click)="cerrarModalUpload()">Cerrar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          
+              <!-- Mostrar mensaje de éxito -->
+              <div *ngIf="successMessageFileManagement" class="alert alert-success mt-3" role="alert">
+                {{ successMessageFileManagement }}
+              </div>
+          
+              <!-- Mostrar mensaje de error -->
+              <div *ngIf="errorMessageManagement" class="alert alert-danger mt-3" role="alert">
+                {{ errorMessageManagement }}
+              </div>
+            </div>
+          </tab>
+        </tabset>
+
+        <!-- Modal para mostrar más detalles del documento -->
+        <div class="modal" tabindex="-1" [class.show]="isModalOpen" style="display: block;" *ngIf="isModalOpen">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Detalles del Documento</h5>
+                <button type="button" class="btn-close" (click)="cerrarModal()"></button>
+              </div>
+              <div class="modal-body">
+                <p><strong>ID:</strong> {{ selectedDoc.id }}</p>
+                <p><strong>URL:</strong> <a [href]="selectedDoc.url" target="_blank">{{ selectedDoc.url }}</a></p>
+                <p><strong>Row Number:</strong> {{ selectedDoc.row_number }}</p>
+                <p><strong>Año:</strong> {{ selectedDoc.anio }}</p>
+                <p><strong>Título:</strong> {{ selectedDoc.titulo }}</p>
+                <p><strong>Descripción:</strong> {{ selectedDoc.desc }}</p>
+                <p><strong>Tema:</strong> {{ selectedDoc.tema }}</p>
+                <p><strong>Subtema:</strong> {{ selectedDoc.subtema }}</p>
+                <p><strong>Borrado:</strong> {{ selectedDoc.borrado ? 'Sí' : 'No' }}</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="cerrarModal()">Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para ingresar la razón -->
+<div class="modal" tabindex="-1" [class.show]="isReasonModalOpen" style="display: block;" *ngIf="isReasonModalOpen">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Motivo para {{tipoAccion}}</h5>
+        <button type="button" class="btn-close" (click)="cerrarModalRazon()"></button>
+      </div>
+      <div class="modal-body">
+        <label for="razon">Por favor ingrese el motivo para {{tipoAccion}}</label>
+        <input type="text" [(ngModel)]="razonAccion" class="form-control" id="razon" />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModalRazon()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="confirmarAccion()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,68 @@
+<!-- Overlay de carga centrado -->
+<div *ngIf="loading" class="loading-overlay d-flex justify-content-center align-items-center">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+
+<!-- Contenedor principal centrado -->
+<div class="container d-flex justify-content-center  flex-column" *ngIf="!loading">
+
+
+  <div class="respuesta">
+    <!-- Columna izquierda: Entrada y respuesta -->
+    <div class="col-12">
+      <!-- Indicador de carga para la consulta centrado -->
+      <div *ngIf="loadingQuestion" class="loading-overlay d-flex justify-content-center align-items-center">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <!-- Mostrar respuesta y documentos cuando estén disponibles -->
+      <div *ngIf="response && !loadingQuestion">
+        <div class="alert alert-info text-center" role="alert">
+          {{ response }}
+        </div>
+
+        <!-- Listado de documentos -->
+        <div *ngFor="let doc of documentos" class="card mb-2">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <button class="btn btn-link" (click)="doc.expanded = !doc.expanded">
+              {{ doc.expanded ? '▼' : '►' }} <strong>Documento:</strong> {{ doc.titulo }}
+            </button>
+            <span class="badge bg-secondary">Score: {{ doc.score }}</span>
+          </div>
+
+          <!-- Detalles del documento expandido -->
+          <div *ngIf="doc.expanded" class="card-body">
+            <p><strong>row:</strong> {{ doc.row_number }}</p>
+            <p><strong>Título:</strong> {{ doc.titulo }}</p>
+            <p><strong>Descripción:</strong> {{ doc.desc }}</p>
+            <p><strong>Año:</strong> {{ doc.anio }}</p>
+            <p><strong>Tema:</strong> {{ doc.tem }}</p>
+            <p><strong>Subtema:</strong> {{ doc.subtema }}</p>
+            <p><strong>Url:</strong> {{ doc.PDF }}</p>
+            <p><strong>Contenido:</strong></p>
+            <p>{{ doc.contenido }}</p>
+            <a [href]="doc.PDF" target="_blank" class="btn btn-primary">Ver Documento</a>
+          </div>
+        </div>
+
+      </div>
+    </div> <!-- Fin de fila -->
+  </div> <!-- Fin de contenedor principal -->
+
+  <div class="preguntaDiv">
+    <!-- Columna izquierda: Entrada y respuesta -->
+    <div class="col-12">
+      <!-- Campo de entrada de pregunta -->
+      <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Haz tu consulta" [(ngModel)]="question"
+          aria-label="Recipient's username" aria-describedby="button-addon2">
+        <button class="btn btn-outline-secondary" (click)="sendQuestion()" [disabled]="loadingQuestion"
+          id="button-addon2">enviar</button>
+      </div>
+
+    </div> <!-- Fin de columna izquierda -->
+  </div> <!-- Fin de contenedor principal -->

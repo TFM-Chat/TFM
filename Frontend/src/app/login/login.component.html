@@ -1,0 +1,35 @@
+<div class="container login-container">
+  <div class="row justify-content-center align-items-center min-vh-100">
+    <div class="col-md-5">
+      <div class="card shadow">
+        <div class="card-body">
+          <div class="text-center mb-4">
+            <img src="/assets/med.png" alt="Logo" style="height: 300px;">
+          </div>
+          <form [formGroup]="formulario" (ngSubmit)="login()">
+            <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+              {{ errorMessage }}
+            </div>
+            <div class="mb-3">
+              <label for="correo" class="form-label">Correo electrónico</label>
+              <input type="email" formControlName="correo" class="form-control" id="correo">
+            </div>
+            <div class="mb-3">
+              <label for="contrasenia" class="form-label">Contraseña</label>
+              <input type="password" formControlName="contrasenia" class="form-control" id="contrasenia">
+            </div>
+
+            <!-- Cambiar el botón por un spinner mientras se autentica -->
+            <button *ngIf="!loading" type="submit" class="btn btn-primary w-100">Ingresar</button>
+            <div *ngIf="loading" class="text-center">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+              </div>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
